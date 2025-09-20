@@ -1,112 +1,50 @@
 # mini-rpc
 
-基于SpringBoot + Netty 实现的简单版RPC框架。本项目只有RPC框架最基本的一些功能，目的是学习、理解RPC框架的实现原理和工作过程。
+这是一个基于Netty + Java SPI机制实现的轻量级RPC框架，采用Maven多模块结构。项目的主要目标是学习和理解RPC框架的实现原理。
 
+## 📚 文档列表
+/doc 目录下
 
-## Features：
+### 1. [RPC框架实现原理](./RPC框架实现原理.md)
+- RPC框架的基本概念和实现原理
+- 代理模式在RPC中的应用
+- 完整的RPC调用流程分析
+- 架构图和关键技术点说明
 
-- 服务端支持异步多线程处理RPC请求。
-- 客户端支持异步调用，提供future、callback的能力。
-- 支持不同的序列化/反序列化。
-- 支持各种JDBC协议数据库的注册中心。
+### 2. [客户端桩的动态生成](./客户端桩的动态生成.md)
+- 桩（Stub）的概念和作用
+- 动态代理模式的实现
+- 代码模板 + 动态编译的技术方案
+- 具体实现步骤和代码示例
 
+### 3. [通用序列化实现](./通用序列化实现.md)
+- 序列化框架的设计思路
+- SPI机制的应用
+- 多种序列化协议的支持
+- 类型安全和性能优化
 
-## 总体架构
+### 4. [异步通信的实现](./异步通信的实现.md)
+- 基于Netty的异步网络通信
+- CompletableFuture的使用
+- 背压机制和超时处理
+- 高性能网络传输的实现
 
-1. **RPC 框架对外提供的服务**定义在一个接口 RpcAccessPoint 中。
+## 🎯 学习建议
 
-```java
-/**
- * RPC框架对外提供的服务接口
- */
-public interface RpcAccessPoint extends Closeable{
-    /**
-     * 客户端获取远程服务的引用
-     * @param uri 远程服务地址
-     * @param serviceClass 服务的接口类的Class
-     * @param <T> 服务接口的类型
-     * @return 远程服务引用
-     */
-    <T> T getRemoteService(URI uri, Class<T> serviceClass);
+### 初学者
+建议按照以下顺序阅读文档：
+1. RPC框架实现原理 → 了解整体架构
+2. 客户端桩的动态生成 → 理解代理机制
+3. 通用序列化实现 → 掌握数据传输
+4. 异步通信的实现 → 深入网络通信
 
-    /**
-     * 服务端注册服务的实现实例
-     * @param service 实现实例
-     * @param serviceClass 服务的接口类的Class
-     * @param <T> 服务接口的类型
-     * @return 服务地址
-     */
-    <T> URI addServiceProvider(T service, Class<T> serviceClass);
+### 有经验的开发者
+可以直接阅读感兴趣的特定技术模块，每个文档都包含了完整的技术细节和代码实现。
 
-    /**
-     * 服务端启动RPC框架，监听接口，开始提供远程服务。
-     * @return 服务实例，用于程序停止的时候安全关闭服务。
-     */
-    Closeable startServer() throws Exception;
-}
-```
+## 🔧 技术栈
 
-
-2. 一个**注册中心**的接口 NameService。
-
-```java
-/**
- * 注册中心
- */
-public interface NameService {
-    /**
-     * 注册服务
-     * @param serviceName 服务名称
-     * @param uri 服务地址
-     */
-    void registerService(String serviceName, URI uri) throws IOException;
-
-    /**
-     * 查询服务地址
-     * @param serviceName 服务名称
-     * @return 服务地址
-     */
-    URI lookupService(String serviceName) throws IOException;
-}
-```
-
-
-### 使用方式
-
-以调用以一个helloService为例。
-
-客户端：
-
-```java
-// 1.注册中心，查询服务地址
-URI uri = nameService.lookupService(serviceName);
-
-// 2.获取远程服务的引用
-HelloService helloService = rpcAccessPoint.getRemoteService(uri, HelloService.class);
-String response = helloService.hello(name);
-logger.info("收到响应: {}.", response);
-```
-
-服务端：
-
-```java
-// 1.服务端启动RPC框架
-rpcAccessPoint.startServer();
-
-// 2. 服务端注册服务的实现实例
-URI uri = rpcAccessPoint.addServiceProvider(helloService, HelloService.class);
-
-// 3.注册中心，注册服务
-nameService.registerService(serviceName, uri);
-```
-
-### 现目结构说明
-
-| **模块**    | **说明**               |
-| ----------- | ---------------------- |
-| client      | 客户端-使用例子        |
-| server      | 服务端-使用例子        |
-| rpc-api     | RPC 框架对外提供的接口 |
-| rpc-netty   | RPC框架核心实现        |
-| nameService | 注册中心               |
-
+- **Java 8+** - 核心开发语言
+- **Netty** - 网络通信框架
+- **SPI机制** - 服务发现和扩展
+- **动态编译** - 代码生成技术
+- **CompletableFuture** - 异步编程
